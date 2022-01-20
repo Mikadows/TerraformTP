@@ -15,7 +15,7 @@ variable "azure_rg_name" {
 
 variable "azure_storageaccount_name" {
   type    = string
-  default = "tp-storage-account"
+  default = "tpstorageaccount"
 }
 
 variable "azure_storageaccount_tier" {
@@ -26,4 +26,14 @@ variable "azure_storageaccount_tier" {
 variable "azure_storageaccount_replication" {
   type    = string
   default = "LRS"
+}
+
+variable "azure_mysql_login" {
+  type    = string
+  default = "4dm1n157r470r"
+}
+
+variable "azure_mysql_pwd" {
+  type    = string
+  default = "4-v3ry-53cr37-p455w0rd"
 }

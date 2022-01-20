@@ -61,3 +61,33 @@ resource "azurerm_app_service" "app_service" {
     remote_debugging_version = "VS2019"
   }
 }
+
+resource "azurerm_storage_account" "storage_account" {
+  name                     = var.azure_storageaccount_name
+  resource_group_name      = azurerm_resource_group.rg.name
+  location                 = azurerm_resource_group.rg.location
+  account_tier             = var.azure_storageaccount_tier
+  account_replication_type = var.azure_storageaccount_replication
+}
+
+resource "azurerm_mssql_server" "mssql_server" {
+  name                         = "tp-sqlserver"
+  resource_group_name          = azurerm_resource_group.rg.name
+  location                     = azurerm_resource_group.rg.location
+  version                      = "12.0"
+  administrator_login          = var.azure_mysql_login
+  administrator_login_password = var.azure_mysql_pwd
+}
+
+resource "azurerm_mssql_database" "mssql_database" {
+  name           = "tp-acctest-db-d"
+  server_id      = azurerm_mssql_server.mssql_server.id
+}
+
+resource "azurerm_mssql_database_extended_auditing_policy" "db-policy" {
+  database_id                             = azurerm_mssql_database.mssql_database.id
+  storage_endpoint                        = azurerm_storage_account.storage_account.primary_blob_endpoint
+  storage_account_access_key              = azurerm_storage_account.storage_account.primary_access_key
+  storage_account_access_key_is_secondary = false
+  retention_in_days                       = 6
+}
