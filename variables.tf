@@ -1,24 +1,29 @@
 variable "azure_location_vara" {
-  type = string
+  type    = string
   default = "West Europe"
 }
 
+variable "azure_app_service_name_vara" {
+  type    = string
+  default = "AppService-TP"
+}
+
 variable "azure_rg_name" {
-  type = string
+  type    = string
   default = "RG-TP"
 }
 
 variable "azure_storageaccount_name" {
-  type = string
+  type    = string
   default = "tp-storage-account"
 }
 
 variable "azure_storageaccount_tier" {
-  type = string
+  type    = string
   default = "Standard"
 }
 
 variable "azure_storageaccount_replication" {
-  type = string
+  type    = string
   default = "LRS"
 }
