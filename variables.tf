@@ -37,3 +37,23 @@ variable "azure_mysql_pwd" {
   type    = string
   default = "4-v3ry-53cr37-p455w0rd"
 }
+
+variable "azure_hd_gateway_login" {
+  type    = string
+  default = "acctestusrgw"
+}
+
+variable "azure_hd_gateway_pwd" {
+  type    = string
+  default = "TerrAform123!"
+}
+
+variable "azure_hd_usr_login" {
+  type    = string
+  default = "acctestusrvm"
+}
+
+variable "azure_hd_usr_pwd" {
+  type    = string
+  default = "AccTestvdSC4daf986!"
+}

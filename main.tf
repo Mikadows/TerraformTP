@@ -91,3 +91,53 @@ resource "azurerm_mssql_database_extended_auditing_policy" "db-policy" {
   storage_account_access_key_is_secondary = false
   retention_in_days                       = 6
 }
+
+resource "azurerm_storage_container" "st_container" {
+  name                  = "hdinsight"
+  storage_account_name  = azurerm_storage_account.storage_account.name
+  container_access_type = "private"
+}
+
+resource "azurerm_hdinsight_hadoop_cluster" "hadoop_cluster" {
+  name                = "example-hdicluster-190122"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  cluster_version     = "3.6"
+  tier                = "Standard"
+
+  component_version {
+    hadoop = "2.7"
+  }
+
+  gateway {
+    username = var.azure_hd_gateway_login
+    password = var.azure_hd_gateway_pwd
+  }
+
+  storage_account {
+    storage_container_id = azurerm_storage_container.st_container.id
+    storage_account_key  = azurerm_storage_account.storage_account.primary_access_key
+    is_default           = true
+  }
+
+  roles {
+    head_node {
+      vm_size  = "Standard_D3_V2"
+      username = var.azure_hd_usr_login
+      password = var.azure_hd_usr_pwd
+    }
+
+    worker_node {
+      vm_size               = "Standard_D4_V2"
+      username              = var.azure_hd_usr_login
+      password              = var.azure_hd_usr_pwd
+      target_instance_count = 3
+    }
+
+    zookeeper_node {
+      vm_size  = "Standard_D3_V2"
+      username = var.azure_hd_usr_login
+      password = var.azure_hd_usr_pwd
+    }
+  }
+}
