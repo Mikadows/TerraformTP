@@ -37,7 +37,7 @@ resource "azurerm_traffic_manager_profile" "traffic_manager" {
 }
 
 resource "azurerm_app_service_plan" "app_service" {
-  name                = "${var.azure_app_service_name_vara}-asp"
+  name                = "${var.azure_app_service_name_vara}-190122"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   kind                = "Linux"
@@ -71,7 +71,7 @@ resource "azurerm_storage_account" "storage_account" {
 }
 
 resource "azurerm_mssql_server" "mssql_server" {
-  name                         = "tp-sqlserver"
+  name                         = "tp-sqlserver-190122"
   resource_group_name          = azurerm_resource_group.rg.name
   location                     = azurerm_resource_group.rg.location
   version                      = "12.0"
@@ -80,8 +80,8 @@ resource "azurerm_mssql_server" "mssql_server" {
 }
 
 resource "azurerm_mssql_database" "mssql_database" {
-  name           = "tp-acctest-db-d"
-  server_id      = azurerm_mssql_server.mssql_server.id
+  name      = "tp-acctest-db-d-190122"
+  server_id = azurerm_mssql_server.mssql_server.id
 }
 
 resource "azurerm_mssql_database_extended_auditing_policy" "db-policy" {

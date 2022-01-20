@@ -15,7 +15,7 @@ variable "azure_rg_name" {
 
 variable "azure_storageaccount_name" {
   type    = string
-  default = "tpstorageaccount"
+  default = "tpstorageaccount190122"
 }
 
 variable "azure_storageaccount_tier" {
