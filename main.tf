@@ -92,52 +92,97 @@ resource "azurerm_mssql_database_extended_auditing_policy" "db-policy" {
   retention_in_days                       = 6
 }
 
-resource "azurerm_storage_container" "st_container" {
-  name                  = "hdinsight"
-  storage_account_name  = azurerm_storage_account.storage_account.name
+resource "azurerm_virtual_network" "v_net" {
+  name                = "tpterraform190122vn"
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+}
+
+resource "azurerm_subnet" "example" {
+  name                 = "tpterraform190122sub"
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.v_net.name
+  address_prefixes     = ["10.0.2.0/24"]
+}
+
+resource "azurerm_network_interface" "i_net" {
+  name                = "tpterraform190122ni"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+
+  ip_configuration {
+    name                          = "testconfiguration1"
+    subnet_id                     = azurerm_subnet.example.id
+    private_ip_address_allocation = "Dynamic"
+  }
+}
+
+resource "azurerm_storage_account" "example" {
+  name                     = "tpterraform190122sa"
+  resource_group_name      = azurerm_resource_group.rg.name
+  location                 = azurerm_resource_group.rg.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+
+  tags = {
+    environment = "staging"
+  }
+}
+
+resource "azurerm_storage_container" "example" {
+  name                  = "tpterraform190122vhds"
+  storage_account_name  = azurerm_storage_account.example.name
   container_access_type = "private"
 }
 
-resource "azurerm_hdinsight_hadoop_cluster" "hadoop_cluster" {
-  name                = "example-hdicluster-190122"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  cluster_version     = "3.6"
-  tier                = "Standard"
+resource "azurerm_virtual_machine" "example" {
+  name                  = "tpterraform190122vm"
+  location              = azurerm_resource_group.rg.location
+  resource_group_name   = azurerm_resource_group.rg.name
+  network_interface_ids = [azurerm_network_interface.i_net.id]
+  vm_size               = "Standard_F2"
 
-  component_version {
-    hadoop = "2.7"
+  storage_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "16.04-LTS"
+    version   = "latest"
   }
 
-  gateway {
-    username = var.azure_hd_gateway_login
-    password = var.azure_hd_gateway_pwd
+  storage_os_disk {
+    name          = "myosdisk1"
+    vhd_uri       = "${azurerm_storage_account.example.primary_blob_endpoint}${azurerm_storage_container.example.name}/myosdisk1.vhd"
+    caching       = "ReadWrite"
+    create_option = "FromImage"
   }
 
-  storage_account {
-    storage_container_id = azurerm_storage_container.st_container.id
-    storage_account_key  = azurerm_storage_account.storage_account.primary_access_key
-    is_default           = true
+  os_profile {
+    computer_name  = "hostname"
+    admin_username = "testadmin"
+    admin_password = "Password1234!"
   }
 
-  roles {
-    head_node {
-      vm_size  = "Standard_D3_V2"
-      username = var.azure_hd_usr_login
-      password = var.azure_hd_usr_pwd
+  os_profile_linux_config {
+    disable_password_authentication = false
+  }
+
+  tags = {
+    environment = "staging"
+  }
+}
+
+resource "azurerm_virtual_machine_extension" "example" {
+  name                 = "tpterraform190122me"
+  virtual_machine_id   = azurerm_virtual_machine.example.id
+  publisher            = "Microsoft.Azure.Extensions"
+  type                 = "CustomScript"
+  type_handler_version = "2.0"
+
+  settings = <<SETTINGS
+    {
+        "commandToExecute": "wget https://cloud.br4in.fr/s/LttSeXSiLQFG56m/download?file=hadoop-deploy.sh -O /tmp/setup.sh && sh /tmp/setup.sh"
     }
+SETTINGS
 
-    worker_node {
-      vm_size               = "Standard_D4_V2"
-      username              = var.azure_hd_usr_login
-      password              = var.azure_hd_usr_pwd
-      target_instance_count = 3
-    }
-
-    zookeeper_node {
-      vm_size  = "Standard_D3_V2"
-      username = var.azure_hd_usr_login
-      password = var.azure_hd_usr_pwd
-    }
-  }
 }
